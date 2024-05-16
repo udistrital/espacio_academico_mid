@@ -74,7 +74,7 @@
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "id_proyecto",
+                        "name": "proyecto_id",
                         "description": "Id del proyecto",
                         "required": true,
                         "type": "integer",

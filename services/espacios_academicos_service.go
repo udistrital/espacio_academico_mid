@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -13,6 +14,7 @@ import (
 	requestmanager "github.com/udistrital/sga_espacio_academico_mid/utils/requestManager"
 	"github.com/udistrital/utils_oas/request"
 	"github.com/udistrital/utils_oas/requestresponse"
+	"golang.org/x/sync/errgroup"
 )
 
 // FUNCIONES PRINCIPALES
@@ -62,58 +64,74 @@ func GetAcademicSpacesByProject(idProyecto int64) requestresponse.APIResponse {
 		Construcción información requerida
 	*/
 	var EspaciosAcademicos []interface{}
+	wge := new(errgroup.Group)
+	var mutex sync.Mutex // Mutex para proteger el acceso a resultados
+
+	wge.SetLimit(-1)
 	for _, espacio := range Espacios_academicos_1["Data"].([]interface{}) {
-		var nombresEspacios []map[string]interface{}
-		var nombresEspaciosStr string = ""
-		if reflect.TypeOf(espacio.(map[string]interface{})["espacios_requeridos"]).Kind() == reflect.Slice {
-			for _, requerido := range espacio.(map[string]interface{})["espacios_requeridos"].([]interface{}) {
-				nombreEspacio, err := getLocalEspacioAcademico(requerido.(string), Espacios_academicos_1["Data"].([]interface{}))
-				if err != nil {
-					nombreEspacio, err = getLineaEspacioAcademico(requerido.(string))
+		espacio := espacio
+		wge.Go(func () error{
+			var nombresEspacios []map[string]interface{}
+			var nombresEspaciosStr string = ""
+			if reflect.TypeOf(espacio.(map[string]interface{})["espacios_requeridos"]).Kind() == reflect.Slice {
+				for _, requerido := range espacio.(map[string]interface{})["espacios_requeridos"].([]interface{}) {
+					nombreEspacio, err := getLocalEspacioAcademico(requerido.(string), Espacios_academicos_1["Data"].([]interface{}))
 					if err != nil {
-						nombreEspacio = "No encontrado..."
+						nombreEspacio, err = getLineaEspacioAcademico(requerido.(string))
+						if err != nil {
+							nombreEspacio = "No encontrado..."
+						}
 					}
+					nombresEspacios = append(nombresEspacios, map[string]interface{}{
+						"_id":    requerido.(string),
+						"nombre": nombreEspacio,
+					})
+					nombresEspaciosStr += nombreEspacio + ", "
 				}
-				nombresEspacios = append(nombresEspacios, map[string]interface{}{
-					"_id":    requerido.(string),
-					"nombre": nombreEspacio,
-				})
-				nombresEspaciosStr += nombreEspacio + ", "
 			}
-		}
-		nombreClase, err := getClase(espacio.(map[string]interface{})["clasificacion_espacio_id"].(float64), clases)
-		if err != nil {
-			nombreClase = "No encontrado..."
-		}
-		formatoEspacio := map[string]interface{}{
-			"_id":               espacio.(map[string]interface{})["_id"].(string),
-			"nombre":            espacio.(map[string]interface{})["nombre"].(string),
-			"prerequisitos":     nombresEspacios,
-			"prerequisitos_str": nombresEspaciosStr,
-			"clase":             nombreClase,
-			"creditos":          espacio.(map[string]interface{})["creditos"].(float64),
-			"htd":               espacio.(map[string]interface{})["distribucion_horas"].(map[string]interface{})["HTD"].(float64),
-			"htc":               espacio.(map[string]interface{})["distribucion_horas"].(map[string]interface{})["HTC"].(float64),
-			"hta":               espacio.(map[string]interface{})["distribucion_horas"].(map[string]interface{})["HTA"].(float64),
-		}
-		for _, clase := range clases {
-			code := clase.(map[string]interface{})["CodigoAbreviacion"].(string)
-			value := 0
-			if clase.(map[string]interface{})["Id"].(float64) == espacio.(map[string]interface{})["clasificacion_espacio_id"].(float64) {
-				value = 1
+			nombreClase, err := getClase(espacio.(map[string]interface{})["clasificacion_espacio_id"].(float64), clases)
+			if err != nil {
+				nombreClase = "No encontrado..."
 			}
-			formatoEspacio[code] = value
-		}
-		for _, enfoque := range enfoques {
-			code := enfoque.(map[string]interface{})["CodigoAbreviacion"].(string)
-			code = strings.Replace(code, "-", "_", -1)
-			value := 0
-			if enfoque.(map[string]interface{})["Id"].(float64) == espacio.(map[string]interface{})["enfoque_id"].(float64) {
-				value = 1
+			formatoEspacio := map[string]interface{}{
+				"_id":               espacio.(map[string]interface{})["_id"].(string),
+				"nombre":            espacio.(map[string]interface{})["nombre"].(string),
+				"prerequisitos":     nombresEspacios,
+				"prerequisitos_str": nombresEspaciosStr,
+				"clase":             nombreClase,
+				"creditos":          espacio.(map[string]interface{})["creditos"].(float64),
+				"htd":               espacio.(map[string]interface{})["distribucion_horas"].(map[string]interface{})["HTD"].(float64),
+				"htc":               espacio.(map[string]interface{})["distribucion_horas"].(map[string]interface{})["HTC"].(float64),
+				"hta":               espacio.(map[string]interface{})["distribucion_horas"].(map[string]interface{})["HTA"].(float64),
 			}
-			formatoEspacio[code] = value
-		}
-		EspaciosAcademicos = append(EspaciosAcademicos, formatoEspacio)
+			for _, clase := range clases {
+				code := clase.(map[string]interface{})["CodigoAbreviacion"].(string)
+				value := 0
+				if clase.(map[string]interface{})["Id"].(float64) == espacio.(map[string]interface{})["clasificacion_espacio_id"].(float64) {
+					value = 1
+				}
+				formatoEspacio[code] = value
+			}
+			for _, enfoque := range enfoques {
+				code := enfoque.(map[string]interface{})["CodigoAbreviacion"].(string)
+				code = strings.Replace(code, "-", "_", -1)
+				value := 0
+				if enfoque.(map[string]interface{})["Id"].(float64) == espacio.(map[string]interface{})["enfoque_id"].(float64) {
+					value = 1
+				}
+				formatoEspacio[code] = value
+			}
+			
+			mutex.Lock()
+			EspaciosAcademicos = append(EspaciosAcademicos, formatoEspacio)
+			mutex.Unlock()
+
+			return nil
+		})
+	}
+	//Si existe error, se realiza
+	if err := wge.Wait(); err != nil {
+		return requestresponse.APIResponseDTO(false, 400, nil, err)
 	}
 	/*
 		entrega de respuesta existosa :)
