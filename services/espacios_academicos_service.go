@@ -70,7 +70,7 @@ func GetAcademicSpacesByProject(idProyecto int64) requestresponse.APIResponse {
 	wge.SetLimit(-1)
 	for _, espacio := range Espacios_academicos_1["Data"].([]interface{}) {
 		espacio := espacio
-		wge.Go(func () error{
+		wge.Go(func() error {
 			var nombresEspacios []map[string]interface{}
 			var nombresEspaciosStr string = ""
 			if reflect.TypeOf(espacio.(map[string]interface{})["espacios_requeridos"]).Kind() == reflect.Slice {
@@ -121,7 +121,7 @@ func GetAcademicSpacesByProject(idProyecto int64) requestresponse.APIResponse {
 				}
 				formatoEspacio[code] = value
 			}
-			
+
 			mutex.Lock()
 			EspaciosAcademicos = append(EspaciosAcademicos, formatoEspacio)
 			mutex.Unlock()
@@ -137,39 +137,6 @@ func GetAcademicSpacesByProject(idProyecto int64) requestresponse.APIResponse {
 		entrega de respuesta existosa :)
 	*/
 	return requestresponse.APIResponseDTO(true, 200, EspaciosAcademicos)
-}
-
-func PostAcademicSpacesBySon(data []byte) requestresponse.APIResponse {
-	var espacioAcademicoRequest map[string]interface{}
-	var EspacioPadrePost map[string]interface{}
-	var EspacioPadrePostTempo map[string]interface{}
-
-	if err := json.Unmarshal(data, &espacioAcademicoRequest); err == nil {
-
-		grupos_espacios := espacioAcademicoRequest["grupo"]
-		strGrupos := fmt.Sprintf("%v", grupos_espacios)
-		_, GrupoIn := contarYSepararGrupos(strGrupos)
-
-		if err := helpers.SendJson("http://"+beego.AppConfig.String("EspaciosAcademicosService")+"espacio-academico", "POST", &EspacioPadrePost, espacioAcademicoRequest); err != nil {
-			panic(map[string]interface{}{"funcion": "FuncionPostHijosEspacio", "err": "Error al generar el espacio padre  ", "status": "400", "log": err})
-		}
-
-		responseEspacioPadre := EspacioPadrePost["Data"].(map[string]interface{})
-		IdEspacioAcademicoPadre := fmt.Sprintf("%v", responseEspacioPadre["_id"])
-		EspacioAcademicoHijoTemporal := espacioAcademicoRequest
-
-		EspacioAcademicoHijoTemporal["espacio_academico_padre"] = IdEspacioAcademicoPadre
-
-		//fmt.Println(".---------------------------Espacio temporal--------------------------")
-		for _, grupo := range GrupoIn {
-			EspacioAcademicoHijoTemporal["grupo"] = grupo
-			if err := helpers.SendJson("http://"+beego.AppConfig.String("EspaciosAcademicosService")+"espacio-academico", "POST", &EspacioPadrePostTempo, EspacioAcademicoHijoTemporal); err != nil {
-				panic(map[string]interface{}{"funcion": "VersionarPlan", "err": "Error al generar el espacio padre  ", "status": "400", "log": err})
-			}
-		}
-		return requestresponse.APIResponseDTO(true, 201, responseEspacioPadre)
-	}
-	return requestresponse.APIResponseDTO(false, 400, nil, "Error en el formato del cuerpo de la petición")
 }
 
 func PutAcademicSpaceAssignPeriod(data []byte) requestresponse.APIResponse {

@@ -17,7 +17,6 @@ type EspaciosAcademicosController struct {
 // URLMapping ...
 func (c *EspaciosAcademicosController) URLMapping() {
 	c.Mapping("GetAcademicSpacesByProject", c.GetAcademicSpacesByProject)
-	c.Mapping("PostAcademicSpacesBySon", c.PostAcademicSpacesBySon)
 	c.Mapping("PutAcademicSpaceAssignPeriod", c.PutAcademicSpaceAssignPeriod)
 }
 
@@ -43,22 +42,6 @@ func (c *EspaciosAcademicosController) GetAcademicSpacesByProject() {
 		c.Data["json"] = resultado
 		c.Ctx.Output.SetStatus(resultado.Status)
 	}
-	c.ServeJSON()
-}
-
-// PostAcademicSpacesBySon ...
-// @Title PostAcademicSpacesBySon
-// @Description post EspaciosAcademicos for Plan Estudios
-// @Param   body        body    {}  true        "body crear espacio academico content"
-// @Success 200 {}
-// @Failure 403 :body is empty
-// @router /hijos [post]
-func (c *EspaciosAcademicosController) PostAcademicSpacesBySon() {
-	defer errorhandler.HandlePanic(&c.Controller)
-	dataBody := c.Ctx.Input.RequestBody
-	resultado := services.PostAcademicSpacesBySon(dataBody)
-	c.Data["json"] = resultado
-	c.Ctx.Output.SetStatus(resultado.Status)
 	c.ServeJSON()
 }
 
