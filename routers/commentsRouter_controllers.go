@@ -9,6 +9,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
+            Method: "GetEspacioAcademico",
+            Router: "/:espacio_id",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+        beego.ControllerComments{
             Method: "PutAcademicSpaceAssignPeriod",
             Router: "/hijos/asignar-periodo",
             AllowHTTPMethods: []string{"put"},

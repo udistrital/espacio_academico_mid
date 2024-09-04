@@ -323,7 +323,7 @@ func createAcademicSpaceChild(parent string, groups []string, periodIdReq int) (
 			}
 			return result, nil
 		} else {
-			return nil, fmt.Errorf("Espacio académico padre no encontrado")
+			return nil, fmt.Errorf("espacio académico padre no encontrado")
 		}
 	} else {
 		return nil, errSpace
@@ -342,4 +342,35 @@ func validateGroup(groups *[]string, group string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func GetEspacioAcademico(espacioAcademicoId string) requestresponse.APIResponse {
+	urlEspacioAcademico := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico/" + espacioAcademicoId
+	var espacioAcademico map[string]interface{}
+	if err := request.GetJson(urlEspacioAcademico, &espacioAcademico); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+	espacioAcademico = espacioAcademico["Data"].(map[string]interface{})
+
+	docenteId := fmt.Sprintf("%v", espacioAcademico["docente_id"])
+	var docente map[string]interface{}
+	var errDocente error
+	if docenteId != "0" {
+		docente, errDocente = helpers.GetDocente(docenteId)
+		if errDocente != nil {
+			return requestresponse.APIResponseDTO(false, 500, nil, errDocente.Error())
+		}
+		espacioAcademico["docente"] = strings.Title(strings.ToLower(docente["NombreCompleto"].(string)))
+	}
+
+	proyectoId := fmt.Sprintf("%v", espacioAcademico["proyecto_academico_id"])
+
+	proyecto, err := helpers.GetPoyectoAcademico(proyectoId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	espacioAcademico["proyecto_academico"] = proyecto["Nombre"]
+
+	return requestresponse.APIResponseDTO(true, 200, espacioAcademico, "")
 }

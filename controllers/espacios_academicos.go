@@ -18,6 +18,7 @@ type EspaciosAcademicosController struct {
 func (c *EspaciosAcademicosController) URLMapping() {
 	c.Mapping("GetAcademicSpacesByProject", c.GetAcademicSpacesByProject)
 	c.Mapping("PutAcademicSpaceAssignPeriod", c.PutAcademicSpaceAssignPeriod)
+	c.Mapping("GetEspacioAcademico", c.GetEspacioAcademico)
 }
 
 // GetAcademicSpacesByProject ...
@@ -63,6 +64,24 @@ func (c *EspaciosAcademicosController) PutAcademicSpaceAssignPeriod() {
 	*/
 	dataBody := c.Ctx.Input.RequestBody
 	resultado := services.PutAcademicSpaceAssignPeriod(dataBody)
+	c.Data["json"] = resultado
+	c.Ctx.Output.SetStatus(resultado.Status)
+	c.ServeJSON()
+}
+
+// GetEspacioAcademico...
+// @Title GetEspacioAcademico
+// @Description obtener espacio academico con mas detalles por id
+// @Param	espacio_id		path	string	true	"Id del espacio academico"
+// @Success 200 {}
+// @Failure 404 not found resource
+// @router /:espacio_id [get]
+func (c *EspaciosAcademicosController) GetEspacioAcademico() {
+	defer errorhandler.HandlePanic(&c.Controller)
+
+	espacioAcademicoId := c.Ctx.Input.Param(":espacio_id")
+
+	resultado := services.GetEspacioAcademico(espacioAcademicoId)
 	c.Data["json"] = resultado
 	c.Ctx.Output.SetStatus(resultado.Status)
 	c.ServeJSON()
