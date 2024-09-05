@@ -18,6 +18,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
+            Method: "DeleteGrupoEspacioAcademico",
+            Router: "/grupo/:grupo_id",
+            AllowHTTPMethods: []string{"delete"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+        beego.ControllerComments{
             Method: "GetGruposDeEspacioAcademicoPorPeriodo",
             Router: "/grupos",
             AllowHTTPMethods: []string{"get"},

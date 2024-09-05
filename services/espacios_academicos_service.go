@@ -371,7 +371,6 @@ func GetGruposDeEspacioAcademicoPorPeriodo(espacioAcademicoId, periodoId string)
 	if err := request.GetJson(urlGrupos, &resGrupos); err != nil {
 		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
 	}
-	fmt.Println(urlGrupos)
 	gruposDeEspacio := resGrupos["Data"].([]interface{})
 
 	for _, grupo := range gruposDeEspacio {
@@ -390,4 +389,24 @@ func GetGruposDeEspacioAcademicoPorPeriodo(espacioAcademicoId, periodoId string)
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, gruposDeEspacio, "")
+}
+
+func DeleteGrupoEspacioAcademico(grupoId string) requestresponse.APIResponse {
+	urlColocaciones := "http://" + beego.AppConfig.String("HorarioService") +
+		"colocacion-espacio-academico?query=Activo:true,EspacioAcademicoId:" + grupoId
+	var resColocaciones map[string]interface{}
+	if err := request.GetJson(urlColocaciones, &resColocaciones); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+
+	if len(resColocaciones["Data"].([]interface{})) > 0 {
+		return requestresponse.APIResponseDTO(true, 200, nil, "Grupo con colocaciones")
+	}
+
+	_, err := helpers.DesactivarGrupoEspacioAcademico(grupoId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, nil, "delete success")
 }
