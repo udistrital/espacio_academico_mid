@@ -352,17 +352,6 @@ func GetEspacioAcademico(espacioAcademicoId string) requestresponse.APIResponse 
 	}
 	espacioAcademico = espacioAcademico["Data"].(map[string]interface{})
 
-	docenteId := fmt.Sprintf("%v", espacioAcademico["docente_id"])
-	var docente map[string]interface{}
-	var errDocente error
-	if docenteId != "0" {
-		docente, errDocente = helpers.GetDocente(docenteId)
-		if errDocente != nil {
-			return requestresponse.APIResponseDTO(false, 500, nil, errDocente.Error())
-		}
-		espacioAcademico["docente"] = strings.Title(strings.ToLower(docente["NombreCompleto"].(string)))
-	}
-
 	proyectoId := fmt.Sprintf("%v", espacioAcademico["proyecto_academico_id"])
 
 	proyecto, err := helpers.GetPoyectoAcademico(proyectoId)
@@ -373,4 +362,32 @@ func GetEspacioAcademico(espacioAcademicoId string) requestresponse.APIResponse 
 	espacioAcademico["proyecto_academico"] = proyecto["Nombre"]
 
 	return requestresponse.APIResponseDTO(true, 200, espacioAcademico, "")
+}
+
+func GetGruposDeEspacioAcademicoPorPeriodo(espacioAcademicoId, periodoId string) requestresponse.APIResponse {
+	urlGrupos := "http://" + beego.AppConfig.String("EspaciosAcademicosService") +
+		"espacio-academico?query=activo:true,espacio_academico_padre:" + espacioAcademicoId + ",periodo_id:" + periodoId + "&limit=0"
+	var resGrupos map[string]interface{}
+	if err := request.GetJson(urlGrupos, &resGrupos); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+	fmt.Println(urlGrupos)
+	gruposDeEspacio := resGrupos["Data"].([]interface{})
+
+	for _, grupo := range gruposDeEspacio {
+		grupoMap := grupo.(map[string]interface{})
+		docenteId := fmt.Sprintf("%v", grupoMap["docente_id"])
+
+		if docenteId == "0" {
+			grupoMap["docente"] = nil
+		} else {
+			docente, err := helpers.GetDocente(docenteId)
+			if err != nil {
+				return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+			}
+			grupoMap["docente"] = helpers.CapitalizeWords(docente["NombreCompleto"].(string))
+		}
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, gruposDeEspacio, "")
 }

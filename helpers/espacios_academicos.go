@@ -9,6 +9,7 @@ import (
 
 func GetDocente(docenteId string) (map[string]interface{}, error) {
 	urlDocente := "http://" + beego.AppConfig.String("TercerosService") + "tercero/" + docenteId
+	fmt.Println(urlDocente)
 	var docente map[string]interface{}
 	if err := request.GetJson(urlDocente, &docente); err != nil {
 		return nil, fmt.Errorf("error en el servicio de terceros")

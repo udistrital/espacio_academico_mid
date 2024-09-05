@@ -19,6 +19,7 @@ func (c *EspaciosAcademicosController) URLMapping() {
 	c.Mapping("GetAcademicSpacesByProject", c.GetAcademicSpacesByProject)
 	c.Mapping("PutAcademicSpaceAssignPeriod", c.PutAcademicSpaceAssignPeriod)
 	c.Mapping("GetEspacioAcademico", c.GetEspacioAcademico)
+	c.Mapping("GetGruposDeEspacioAcademicoPorPeriodo", c.GetGruposDeEspacioAcademicoPorPeriodo)
 }
 
 // GetAcademicSpacesByProject ...
@@ -82,6 +83,26 @@ func (c *EspaciosAcademicosController) GetEspacioAcademico() {
 	espacioAcademicoId := c.Ctx.Input.Param(":espacio_id")
 
 	resultado := services.GetEspacioAcademico(espacioAcademicoId)
+	c.Data["json"] = resultado
+	c.Ctx.Output.SetStatus(resultado.Status)
+	c.ServeJSON()
+}
+
+// GetGruposDeEspacioAcademico...
+// @Title GetGruposDeEspacioAcademico
+// @Description obtener los grupos de espacio academico padre con mas detalles por periodo
+// @Param	espacio-academico-id		query	string	false	"Se recibe parametro: id del espacio academico padre"
+// @Param	periodo-id					query	string	false	"Se recibe parametro: id del periodo"
+// @Success 200 {}
+// @Failure 404 not found resource
+// @router /grupos [get]
+func (c *EspaciosAcademicosController) GetGruposDeEspacioAcademicoPorPeriodo() {
+	defer errorhandler.HandlePanic(&c.Controller)
+
+	espacioAcademicoId := c.GetString("espacio-academico-id")
+	periodoId := c.GetString("periodo-id")
+
+	resultado := services.GetGruposDeEspacioAcademicoPorPeriodo(espacioAcademicoId, periodoId)
 	c.Data["json"] = resultado
 	c.Ctx.Output.SetStatus(resultado.Status)
 	c.ServeJSON()
