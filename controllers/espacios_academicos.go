@@ -21,6 +21,7 @@ func (c *EspaciosAcademicosController) URLMapping() {
 	c.Mapping("GetEspacioAcademico", c.GetEspacioAcademico)
 	c.Mapping("GetGruposDeEspacioAcademicoPorPeriodo", c.GetGruposDeEspacioAcademicoPorPeriodo)
 	c.Mapping("DeleteGrupoEspacioAcademico", c.DeleteGrupoEspacioAcademico)
+	c.Mapping("ActivarGrupoEspacioAcademico", c.ActivarGrupoEspacioAcademico)
 }
 
 // GetAcademicSpacesByProject ...
@@ -122,6 +123,24 @@ func (c *EspaciosAcademicosController) DeleteGrupoEspacioAcademico() {
 	grupoId := c.Ctx.Input.Param(":grupo_id")
 
 	resultado := services.DeleteGrupoEspacioAcademico(grupoId)
+	c.Data["json"] = resultado
+	c.Ctx.Output.SetStatus(resultado.Status)
+	c.ServeJSON()
+}
+
+// ActivarGrupoEspacioAcademico...
+// @Title ActivarGrupoEspacioAcademico
+// @Description cambiar el estado de activo a true de un grupo de espacio academico
+// @Param	grupo_id		path	string	true	"Id del espacio academico"
+// @Success 200 {}
+// @Failure 404 not found resource
+// @router /activar/:grupo_id [get]
+func (c *EspaciosAcademicosController) ActivarGrupoEspacioAcademico() {
+	defer errorhandler.HandlePanic(&c.Controller)
+
+	grupoId := c.Ctx.Input.Param(":grupo_id")
+
+	resultado := services.ActivarGrupoEspacioAcademico(grupoId)
 	c.Data["json"] = resultado
 	c.Ctx.Output.SetStatus(resultado.Status)
 	c.ServeJSON()

@@ -410,3 +410,23 @@ func DeleteGrupoEspacioAcademico(grupoId string) requestresponse.APIResponse {
 
 	return requestresponse.APIResponseDTO(true, 200, nil, "delete success")
 }
+
+func ActivarGrupoEspacioAcademico(grupoId string) requestresponse.APIResponse {
+	urlGrupo := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico?query=_id:" + grupoId
+	fmt.Println(urlGrupo)
+	var grupo map[string]interface{}
+	if err := request.GetJson(urlGrupo, &grupo); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+
+	grupoData := grupo["Data"].([]interface{})[0].(map[string]interface{})
+	grupoData["activo"] = true
+
+	urlGrupoPut := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico/" + grupoId
+	var grupoPut map[string]interface{}
+	if err := request.SendJson(urlGrupoPut, "PUT", &grupoPut, grupoData); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, grupoPut["Data"], "")
+}

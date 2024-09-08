@@ -27,15 +27,14 @@ func GetPoyectoAcademico(proyectoId string) (map[string]interface{}, error) {
 }
 
 func DesactivarGrupoEspacioAcademico(grupoId string) (map[string]interface{}, error) {
-	urlGrupo := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico/" + grupoId
-	fmt.Println(urlGrupo)
+	urlGrupo := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico?query=_id:" + grupoId
 	var grupo map[string]interface{}
 	if err := request.GetJson(urlGrupo, &grupo); err != nil {
 		return nil, fmt.Errorf("error en el servicio de espacios academicos: %v", err)
 	}
 
-	grupoData := grupo["Data"].(map[string]interface{})
-	grupoData["activo"] = true
+	grupoData := grupo["Data"].([]interface{})[0].(map[string]interface{})
+	grupoData["activo"] = false
 
 	urlGrupoPut := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico/" + grupoId
 	var grupoPut map[string]interface{}
