@@ -219,3 +219,11 @@ func DefaultToMapString(objMap map[string]any, key string, defaultValue any) any
 		return defaultValue
 	}
 }
+
+func CapitalizeWords(s string) string {
+	words := strings.Fields(strings.ToLower(s))
+	for i, word := range words {
+		words[i] = strings.ToUpper(string(word[0])) + word[1:]
+	}
+	return strings.Join(words, " ")
+}
