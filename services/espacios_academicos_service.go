@@ -70,7 +70,7 @@ func GetAcademicSpacesByProject(idProyecto int64) requestresponse.APIResponse {
 	wge.SetLimit(-1)
 	for _, espacio := range Espacios_academicos_1["Data"].([]interface{}) {
 		espacio := espacio
-		wge.Go(func () error{
+		wge.Go(func() error {
 			var nombresEspacios []map[string]interface{}
 			var nombresEspaciosStr string = ""
 			if reflect.TypeOf(espacio.(map[string]interface{})["espacios_requeridos"]).Kind() == reflect.Slice {
@@ -121,7 +121,7 @@ func GetAcademicSpacesByProject(idProyecto int64) requestresponse.APIResponse {
 				}
 				formatoEspacio[code] = value
 			}
-			
+
 			mutex.Lock()
 			EspaciosAcademicos = append(EspaciosAcademicos, formatoEspacio)
 			mutex.Unlock()
@@ -137,39 +137,6 @@ func GetAcademicSpacesByProject(idProyecto int64) requestresponse.APIResponse {
 		entrega de respuesta existosa :)
 	*/
 	return requestresponse.APIResponseDTO(true, 200, EspaciosAcademicos)
-}
-
-func PostAcademicSpacesBySon(data []byte) requestresponse.APIResponse {
-	var espacioAcademicoRequest map[string]interface{}
-	var EspacioPadrePost map[string]interface{}
-	var EspacioPadrePostTempo map[string]interface{}
-
-	if err := json.Unmarshal(data, &espacioAcademicoRequest); err == nil {
-
-		grupos_espacios := espacioAcademicoRequest["grupo"]
-		strGrupos := fmt.Sprintf("%v", grupos_espacios)
-		_, GrupoIn := contarYSepararGrupos(strGrupos)
-
-		if err := helpers.SendJson("http://"+beego.AppConfig.String("EspaciosAcademicosService")+"espacio-academico", "POST", &EspacioPadrePost, espacioAcademicoRequest); err != nil {
-			panic(map[string]interface{}{"funcion": "FuncionPostHijosEspacio", "err": "Error al generar el espacio padre  ", "status": "400", "log": err})
-		}
-
-		responseEspacioPadre := EspacioPadrePost["Data"].(map[string]interface{})
-		IdEspacioAcademicoPadre := fmt.Sprintf("%v", responseEspacioPadre["_id"])
-		EspacioAcademicoHijoTemporal := espacioAcademicoRequest
-
-		EspacioAcademicoHijoTemporal["espacio_academico_padre"] = IdEspacioAcademicoPadre
-
-		//fmt.Println(".---------------------------Espacio temporal--------------------------")
-		for _, grupo := range GrupoIn {
-			EspacioAcademicoHijoTemporal["grupo"] = grupo
-			if err := helpers.SendJson("http://"+beego.AppConfig.String("EspaciosAcademicosService")+"espacio-academico", "POST", &EspacioPadrePostTempo, EspacioAcademicoHijoTemporal); err != nil {
-				panic(map[string]interface{}{"funcion": "VersionarPlan", "err": "Error al generar el espacio padre  ", "status": "400", "log": err})
-			}
-		}
-		return requestresponse.APIResponseDTO(true, 201, responseEspacioPadre)
-	}
-	return requestresponse.APIResponseDTO(false, 400, nil, "Error en el formato del cuerpo de la petición")
 }
 
 func PutAcademicSpaceAssignPeriod(data []byte) requestresponse.APIResponse {
@@ -356,7 +323,7 @@ func createAcademicSpaceChild(parent string, groups []string, periodIdReq int) (
 			}
 			return result, nil
 		} else {
-			return nil, fmt.Errorf("Espacio académico padre no encontrado")
+			return nil, fmt.Errorf("espacio académico padre no encontrado")
 		}
 	} else {
 		return nil, errSpace
@@ -375,4 +342,91 @@ func validateGroup(groups *[]string, group string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func GetEspacioAcademico(espacioAcademicoId string) requestresponse.APIResponse {
+	urlEspacioAcademico := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico/" + espacioAcademicoId
+	var espacioAcademico map[string]interface{}
+	if err := request.GetJson(urlEspacioAcademico, &espacioAcademico); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+	espacioAcademico = espacioAcademico["Data"].(map[string]interface{})
+
+	proyectoId := fmt.Sprintf("%v", espacioAcademico["proyecto_academico_id"])
+
+	proyecto, err := helpers.GetPoyectoAcademico(proyectoId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	espacioAcademico["proyecto_academico"] = proyecto["Nombre"]
+
+	return requestresponse.APIResponseDTO(true, 200, espacioAcademico, "")
+}
+
+func GetGruposDeEspacioAcademicoPorPeriodo(espacioAcademicoId, periodoId string) requestresponse.APIResponse {
+	urlGrupos := "http://" + beego.AppConfig.String("EspaciosAcademicosService") +
+		"espacio-academico?query=activo:true,espacio_academico_padre:" + espacioAcademicoId + ",periodo_id:" + periodoId + "&limit=0"
+	var resGrupos map[string]interface{}
+	if err := request.GetJson(urlGrupos, &resGrupos); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+	gruposDeEspacio := resGrupos["Data"].([]interface{})
+
+	for _, grupo := range gruposDeEspacio {
+		grupoMap := grupo.(map[string]interface{})
+		docenteId := fmt.Sprintf("%v", grupoMap["docente_id"])
+
+		if docenteId == "0" {
+			grupoMap["docente"] = nil
+		} else {
+			docente, err := helpers.GetDocente(docenteId)
+			if err != nil {
+				return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+			}
+			grupoMap["docente"] = helpers.CapitalizeWords(docente["NombreCompleto"].(string))
+		}
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, gruposDeEspacio, "")
+}
+
+func DeleteGrupoEspacioAcademico(grupoId string) requestresponse.APIResponse {
+	urlColocaciones := "http://" + beego.AppConfig.String("HorarioService") +
+		"colocacion-espacio-academico?query=Activo:true,EspacioAcademicoId:" + grupoId
+	var resColocaciones map[string]interface{}
+	if err := request.GetJson(urlColocaciones, &resColocaciones); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+
+	if len(resColocaciones["Data"].([]interface{})) > 0 {
+		return requestresponse.APIResponseDTO(true, 200, nil, "Grupo con colocaciones")
+	}
+
+	_, err := helpers.DesactivarGrupoEspacioAcademico(grupoId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, nil, "delete success")
+}
+
+func ActivarGrupoEspacioAcademico(grupoId string) requestresponse.APIResponse {
+	urlGrupo := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico?query=_id:" + grupoId
+	fmt.Println(urlGrupo)
+	var grupo map[string]interface{}
+	if err := request.GetJson(urlGrupo, &grupo); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+
+	grupoData := grupo["Data"].([]interface{})[0].(map[string]interface{})
+	grupoData["activo"] = true
+
+	urlGrupoPut := "http://" + beego.AppConfig.String("EspaciosAcademicosService") + "espacio-academico/" + grupoId
+	var grupoPut map[string]interface{}
+	if err := request.SendJson(urlGrupoPut, "PUT", &grupoPut, grupoData); err != nil {
+		return requestresponse.APIResponseDTO(false, 500, "Error en el servicio de espacio academico"+err.Error(), nil)
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, grupoPut["Data"], "")
 }
