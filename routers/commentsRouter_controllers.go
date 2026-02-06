@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+    beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
             Method: "GetEspacioAcademico",
             Router: "/:espacio_id",
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+    beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
             Method: "ActivarGrupoEspacioAcademico",
             Router: "/activar/:grupo_id",
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+    beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
             Method: "DeleteGrupoEspacioAcademico",
             Router: "/grupo/:grupo_id",
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+    beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
             Method: "GetGruposDeEspacioAcademicoPorPeriodo",
             Router: "/grupos",
@@ -43,7 +43,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+    beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
             Method: "PutAcademicSpaceAssignPeriod",
             Router: "/hijos/asignar-periodo",
@@ -52,7 +52,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_espacio_academico_mid/controllers:EspaciosAcademicosController"],
+    beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/espacio_academico_mid/controllers:EspaciosAcademicosController"],
         beego.ControllerComments{
             Method: "GetAcademicSpacesByProject",
             Router: "/proyectos/:proyecto_id",
