@@ -8,30 +8,85 @@
     },
     "basePath": "/v1",
     "paths": {
-        "/espacios-academicos/hijos": {
-            "post": {
+        "/espacios-academicos/activar/{grupo_id}": {
+            "get": {
                 "tags": [
                     "espacios-academicos"
                 ],
-                "description": "post EspaciosAcademicos for Plan Estudios",
-                "operationId": "EspaciosAcademicosController.PostAcademicSpacesBySon",
+                "description": "cambiar el estado de activo a true de un grupo de espacio academico",
+                "operationId": "EspaciosAcademicosController.ActivarGrupoEspacioAcademico",
                 "parameters": [
                     {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body crear espacio academico content",
+                        "in": "path",
+                        "name": "grupo_id",
+                        "description": "Id del espacio academico",
                         "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/{}"
-                        }
+                        "type": "string"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "{}"
                     },
-                    "403": {
-                        "description": ":body is empty"
+                    "404": {
+                        "description": "not found resource"
+                    }
+                }
+            }
+        },
+        "/espacios-academicos/grupo/{grupo_id}": {
+            "delete": {
+                "tags": [
+                    "espacios-academicos"
+                ],
+                "description": "eliminar grupo teniendo en cuenta que no tenga colocaciones",
+                "operationId": "EspaciosAcademicosController.DeleteGrupoEspacioAcademico",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "grupo_id",
+                        "description": "Id del espacio academico",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{}"
+                    },
+                    "404": {
+                        "description": "not found resource"
+                    }
+                }
+            }
+        },
+        "/espacios-academicos/grupos": {
+            "get": {
+                "tags": [
+                    "espacios-academicos"
+                ],
+                "description": "obtener los grupos de espacio academico padre con mas detalles por periodo",
+                "operationId": "EspaciosAcademicosController.GetGruposDeEspacioAcademico",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "espacio-academico-id",
+                        "description": "Se recibe parametro: id del espacio academico padre",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "periodo-id",
+                        "description": "Se recibe parametro: id del periodo",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{}"
+                    },
+                    "404": {
+                        "description": "not found resource"
                     }
                 }
             }
@@ -79,6 +134,32 @@
                         "required": true,
                         "type": "integer",
                         "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{}"
+                    },
+                    "404": {
+                        "description": "not found resource"
+                    }
+                }
+            }
+        },
+        "/espacios-academicos/{espacio_id}": {
+            "get": {
+                "tags": [
+                    "espacios-academicos"
+                ],
+                "description": "obtener espacio academico con mas detalles por id",
+                "operationId": "EspaciosAcademicosController.GetEspacioAcademico",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "espacio_id",
+                        "description": "Id del espacio academico",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
