@@ -18,7 +18,5 @@ swagger/lib/
 sga_espacio_academico_mid.exe
 go.mod
 go.sum
-
 commentsRouter__*
-
 .env
