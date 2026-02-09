@@ -8,7 +8,7 @@ import (
 )
 
 func GetDocente(docenteId string) (map[string]interface{}, error) {
-	urlDocente := "http://" + beego.AppConfig.String("TercerosService") + "tercero/" + docenteId
+	urlDocente := beego.AppConfig.String("TercerosService") + "tercero/" + docenteId
 	fmt.Println(urlDocente)
 	var docente map[string]interface{}
 	if err := request.GetJson(urlDocente, &docente); err != nil {
@@ -18,7 +18,8 @@ func GetDocente(docenteId string) (map[string]interface{}, error) {
 }
 
 func GetPoyectoAcademico(proyectoId string) (map[string]interface{}, error) {
-	urlProyecto := "http://" + beego.AppConfig.String("ProyectoAcademicoService") + "proyecto_academico_institucion/" + proyectoId
+	urlProyecto := beego.AppConfig.String("ProyectoAcademicoService") + "proyecto_academico_institucion/" + proyectoId
+	fmt.Println("urlProyecto", urlProyecto)
 	var proyecto map[string]interface{}
 	if err := request.GetJson(urlProyecto, &proyecto); err != nil {
 		return nil, fmt.Errorf("error en el servicio de proyecto académico")

@@ -392,7 +392,7 @@ func GetGruposDeEspacioAcademicoPorPeriodo(espacioAcademicoId, periodoId string)
 }
 
 func DeleteGrupoEspacioAcademico(grupoId string) requestresponse.APIResponse {
-	urlColocaciones := "http://" + beego.AppConfig.String("HorarioService") +
+	urlColocaciones := beego.AppConfig.String("HorarioService") +
 		"colocacion-espacio-academico?query=Activo:true,EspacioAcademicoId:" + grupoId
 	var resColocaciones map[string]interface{}
 	if err := request.GetJson(urlColocaciones, &resColocaciones); err != nil {
