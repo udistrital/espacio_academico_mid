@@ -35,7 +35,7 @@ func main() {
 	logs.SetLogger(logs.AdapterFile, logPath)*/
 
 	// notificacionlib.InitMiddleware()
-	xray.InitXRay()
+	xray.Init()
 	apistatus.Init()
 	auditoria.InitMiddleware()
 	beego.Run()
